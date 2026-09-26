@@ -26,11 +26,13 @@ def _get_env_float(key: str, default: float, fallback_key: str = None) -> float:
 
 def _sanitize_db_url(url: str) -> str:
     if not url or not str(url).strip():
-        return "postgresql://postgres:postgres@localhost:5432/polizas_db"
+        return "postgresql+psycopg2://postgres:postgres@localhost:5432/polizas_db"
     
     url = str(url).strip()
     if url.startswith("postgres://"):
-        url = url.replace("postgres://", "postgresql://", 1)
+        url = url.replace("postgres://", "postgresql+psycopg2://", 1)
+    elif url.startswith("postgresql://"):
+        url = url.replace("postgresql://", "postgresql+psycopg2://", 1)
     
     # Manejar query params no soportados directamente por libpq / psycopg2 (como pgbouncer=true de Neon/Prisma/Supabase)
     try:
