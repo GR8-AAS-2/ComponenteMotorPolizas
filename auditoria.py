@@ -283,7 +283,7 @@ def verificar_integridad_con_auditoria(datos_poliza, codigo_usuario=None, rol=No
                 usuario_id=codigo_usuario,
                 ip_origen=ip_origen
             )
-            return True, None, 200
+            return True, [], 200
 
         # Validar cada póliza de la lista con el motor de fraude
         polizas_validadas = []
@@ -301,13 +301,15 @@ def verificar_integridad_con_auditoria(datos_poliza, codigo_usuario=None, rol=No
                 )
                 return False, res_fraude, status_code
 
-            # Si se recuperaron datos corregidos desde log_auditoria
-            if res_fraude.get("verificacion") == "log_auditoria" and res_fraude.get("datos_correctos"):
-                p_corregida = dict(p)
-                p_corregida.update(res_fraude["datos_correctos"])
-                polizas_validadas.append(p_corregida)
+            p_retorno = dict(p)
+            if res_fraude.get("verificacion") == "log_auditoria":
+                if res_fraude.get("datos_correctos"):
+                    p_retorno.update(res_fraude["datos_correctos"])
+                p_retorno["hash_coincide"] = False
             else:
-                polizas_validadas.append(p)
+                p_retorno["hash_coincide"] = True
+
+            polizas_validadas.append(p_retorno)
 
         # Registrar log de lectura exitosa
         registrar_log_auditoria(
@@ -347,10 +349,12 @@ def verificar_integridad_con_auditoria(datos_poliza, codigo_usuario=None, rol=No
         ip_origen=ip_origen
     )
 
-    # Si se recuperaron datos corregidos desde auditoría
-    if res_fraude.get("verificacion") == "log_auditoria" and res_fraude.get("datos_correctos"):
-        datos_retorno = dict(datos_poliza)
-        datos_retorno.update(res_fraude["datos_correctos"])
-        return True, datos_retorno, 200
+    datos_retorno = dict(datos_poliza)
+    if res_fraude.get("verificacion") == "log_auditoria":
+        if res_fraude.get("datos_correctos"):
+            datos_retorno.update(res_fraude["datos_correctos"])
+        datos_retorno["hash_coincide"] = False
+    else:
+        datos_retorno["hash_coincide"] = True
 
-    return True, datos_poliza, 200
+    return True, datos_retorno, 200
