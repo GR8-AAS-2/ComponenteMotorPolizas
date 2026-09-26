@@ -1,6 +1,5 @@
 import os
 from dotenv import load_dotenv
-
 from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 
 # Cargar variables del archivo .env
@@ -13,7 +12,7 @@ def _sanitize_db_url(url: str) -> str:
     if url.startswith("postgres://"):
         url = url.replace("postgres://", "postgresql://", 1)
     
-    # Manejar query params no soportados directamente por libpq / psycopg2 (como pgbouncer=true de Neon/Prisma)
+    # Manejar query params no soportados directamente por libpq / psycopg2 (como pgbouncer=true de Neon/Prisma/Supabase)
     try:
         parsed = urlparse(url)
         if parsed.query:
@@ -39,10 +38,20 @@ class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key-12345")
 
     # Configuración JWT
-    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "super-secret-jwt-key-change-in-production")
+    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "motor_polizas_super_secret_jwt_key_2026_segura_32bytes")
     JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 
-    # Configuración del Servicio de Auditoría
-    AUDITORIA_SERVICE_URL = os.getenv("AUDITORIA_SERVICE_URL", "http://localhost:5001/api/auditoria/verificar-integridad")
-    AUDITORIA_TIMEOUT = float(os.getenv("AUDITORIA_TIMEOUT", "5.0"))
+    # 1. Servicio Central de Auditoría (poliza_seguridad)
+    AUDIT_SERVICE_URL = os.getenv("AUDIT_SERVICE_URL", "https://polizaseguridad.vercel.app").rstrip("/")
+    AUDIT_API_KEY = os.getenv("AUDIT_API_KEY", os.getenv("AUDIT_SERVICE_API_KEY", ""))
 
+    # 2. Motor de Fraude (motor_fraude)
+    FRAUDE_SERVICE_URL = os.getenv("FRAUDE_SERVICE_URL", "https://motorfraude.vercel.app").rstrip("/")
+    FRAUDE_API_KEY = os.getenv("FRAUDE_API_KEY", "")
+
+    # 3. Motor de Respuesta a Incidentes (motor_respuesta_incidentes)
+    RESPUESTA_SERVICE_URL = os.getenv("RESPUESTA_SERVICE_URL", "https://motorrespuestaincidentes.vercel.app").rstrip("/")
+    RESPUESTA_API_KEY = os.getenv("RESPUESTA_API_KEY", "")
+
+    # Timeout estándar para servicios de seguridad (10 segundos según arquitectura)
+    SECURITY_TIMEOUT = float(os.getenv("SECURITY_TIMEOUT", os.getenv("AUDITORIA_TIMEOUT", "10.0")))

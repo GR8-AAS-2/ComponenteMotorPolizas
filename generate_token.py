@@ -43,9 +43,4 @@ if __name__ == "__main__":
     print("\nToken:\n")
     print(token)
     print("\n" + "="*65)
-    print("Comandos de prueba:")
-    print("1. Consultar todas las polizas:")
-    print(f'   curl -X GET http://localhost:5000/api/polizas -H "Authorization: Bearer {token}"')
-    print("\n2. Consultar poliza por ID:")
-    print(f'   curl -X GET http://localhost:5000/api/polizas/1 -H "Authorization: Bearer {token}"')
-    print("="*65 + "\n")
+
