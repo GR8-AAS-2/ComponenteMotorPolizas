@@ -5,6 +5,8 @@ from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 # Cargar variables del archivo .env si existe
 load_dotenv()
 
+DEFAULT_DB_URL = "postgresql://postgres.pkphvsmyohumvhaxgvmt:Grupo8.2026@aws-0-us-west-2.pooler.supabase.com:6543/postgres?pgbouncer=true"
+
 def _get_env_str(key: str, default: str, fallback_key: str = None) -> str:
     val = os.getenv(key)
     if (val is None or not val.strip()) and fallback_key:
@@ -26,7 +28,7 @@ def _get_env_float(key: str, default: float, fallback_key: str = None) -> float:
 
 def _sanitize_db_url(url: str) -> str:
     if not url or not str(url).strip():
-        return "postgresql+psycopg2://postgres:postgres@localhost:5432/polizas_db"
+        url = DEFAULT_DB_URL
     
     url = str(url).strip()
     if url.startswith("postgres://"):
@@ -50,14 +52,14 @@ def _sanitize_db_url(url: str) -> str:
     return url
 
 class Config:
-    SQLALCHEMY_DATABASE_URI = _sanitize_db_url(os.getenv("DATABASE_URL"))
+    SQLALCHEMY_DATABASE_URI = _sanitize_db_url(_get_env_str("DATABASE_URL", DEFAULT_DB_URL))
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {
         "pool_pre_ping": True,
         "pool_recycle": 300,
     }
     
-    SECRET_KEY = _get_env_str("SECRET_KEY", "dev-secret-key-12345")
+    SECRET_KEY = _get_env_str("SECRET_KEY", "motor-polizas-secret-key-2026")
 
     # Configuración JWT
     JWT_SECRET_KEY = _get_env_str("JWT_SECRET_KEY", "motor_polizas_super_secret_jwt_key_2026_segura_32bytes")
@@ -65,15 +67,15 @@ class Config:
 
     # 1. Servicio Central de Auditoría (poliza_seguridad)
     AUDIT_SERVICE_URL = _get_env_str("AUDIT_SERVICE_URL", "https://polizaseguridad.vercel.app").rstrip("/")
-    AUDIT_API_KEY = _get_env_str("AUDIT_API_KEY", "", fallback_key="AUDIT_SERVICE_API_KEY")
+    AUDIT_API_KEY = _get_env_str("AUDIT_API_KEY", "poliza-seguridad", fallback_key="AUDIT_SERVICE_API_KEY")
 
     # 2. Motor de Fraude (motor_fraude)
     FRAUDE_SERVICE_URL = _get_env_str("FRAUDE_SERVICE_URL", "https://motorfraude.vercel.app").rstrip("/")
-    FRAUDE_API_KEY = _get_env_str("FRAUDE_API_KEY", "")
+    FRAUDE_API_KEY = _get_env_str("FRAUDE_API_KEY", "YUrM-jzVd5c9P61aVz43om81Q9lZoEHIECN3DNjGSiM")
 
     # 3. Motor de Respuesta a Incidentes (motor_respuesta_incidentes)
     RESPUESTA_SERVICE_URL = _get_env_str("RESPUESTA_SERVICE_URL", "https://motorrespuestaincidentes.vercel.app").rstrip("/")
-    RESPUESTA_API_KEY = _get_env_str("RESPUESTA_API_KEY", "")
+    RESPUESTA_API_KEY = _get_env_str("RESPUESTA_API_KEY", "kIRNafZBKQH1-kGeBKxNf6NuNqgKD_QisIqlWJEYwbk")
 
     # Timeout estándar para servicios de seguridad (10 segundos según arquitectura)
     SECURITY_TIMEOUT = _get_env_float("SECURITY_TIMEOUT", 10.0, fallback_key="AUDITORIA_TIMEOUT")
